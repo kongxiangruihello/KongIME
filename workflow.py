@@ -10,7 +10,7 @@ import subprocess
 import time
 import core
 
-VERSION = '0.25.0'
+VERSION = '0.26.0'
 CONFIGS = ('lua/kongime_templates.lua','kongime_templates.tsv','lua/kongime_quick.lua','qingyan.schema.yaml','qingyan.dict.yaml','qingyan_personal.dict.yaml','qingyan_pins.txt','kongime_phrases.txt','default.custom.yaml','squirrel.custom.yaml')
 BUILT = ('qingyan.schema.yaml','qingyan.table.bin','qingyan.prism.bin','qingyan.reverse.bin')
 

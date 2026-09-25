@@ -15,7 +15,7 @@ def validate(value):
  return target
 
 def pack(profile,words):
- value={'format':FORMAT,'created':time.strftime('%Y-%m-%d %H:%M:%S'),'version':'0.25.0','profile':profile,'learning':words}
+ value={'format':FORMAT,'created':time.strftime('%Y-%m-%d %H:%M:%S'),'version':'0.26.0','profile':profile,'learning':words}
  value['checksum']=restore_review.fingerprint({'profile':profile,'learning':words})
  validate(value)
  return value
@@ -24,12 +24,14 @@ def available():
  try:
   import workflow,plistlib
   app=workflow.client()
-  return bool(app and plistlib.loads((app/'Contents/Info.plist').read_bytes()).get('KongIMEVersion')=='0.25.0')
+  return bool(app and plistlib.loads((app/'Contents/Info.plist').read_bytes()).get('KongIMEVersion') in ('0.25.0','0.26.0'))
  except (OSError,ValueError):return False
 
 def status():
  path=learning.root()/'complete-report.json'
- return {'available':available(),'report':json.loads(path.read_text()) if path.exists() else None,'can_rollback':(learning.root()/'complete-before.json').is_file()}
+ report=json.loads(path.read_text()) if path.exists() else None
+ if report:report['changed_since']=report.get('fingerprint')!=restore_review.fingerprint(profile_backup.snapshot())
+ return {'available':available(),'report':report,'can_rollback':(learning.root()/'complete-before.json').is_file()}
 
 def value(before=False):
  result=json.loads((learning.root()/('complete-before.json' if before else 'complete-export.json')).read_text())
@@ -116,7 +118,7 @@ def perform(operation,payload,tool,library,temp):
   learning.replace_database(stage/'qingyan.userdb')
   if restore_review.canonical(profile_backup.snapshot())!=target:raise ValueError('恢复后的配置核对不一致')
   if sort(export_learning(tool,library,temp)['rows'])!=sort(rows):raise ValueError('恢复后的学习词频核对不一致')
-  report={'verified':True,'time':time.strftime('%Y-%m-%d %H:%M:%S'),'learning_count':len(rows),'message':'配置、词库、短语、候选偏好与学习词频校验通过；请点击保存并应用，使恢复的配置生效。'}
+  report={'verified':True,'time':time.strftime('%Y-%m-%d %H:%M:%S'),'learning_count':len(rows),'fingerprint':restore_review.fingerprint(profile_backup.snapshot()),'message':'配置、词库、短语、候选偏好与学习词频校验通过；请点击应用并检查，再切换到 KongIME 试打。'}
   core.atomic_json(folder/'complete-report.json',report)
   record['phase']='committed';core.atomic_json(folder/'complete-transaction.json',record)
   (folder/'complete-transaction.json').unlink()

@@ -9,6 +9,7 @@ import upgrade_check
 import restore_review
 import learning
 import complete_backup
+import update_check
 #!/usr/bin/env python3
 """Loopback-only management app with session-bound mutation protection."""
 import argparse
@@ -127,6 +128,7 @@ class Handler(BaseHTTPRequestHandler):
             if jobs.status()['running']: raise ValueError('正在处理配置或选择文件夹，请等待完成后再修改')
             profile_backup.recover()
             s = core.state()
+            if path == '/api/check-update':return self.send(200,update_check.check(data.get('include_preview',False)))
             if path == '/api/phrase-group':return self.send(200,phrase_tools.group_update(data))
             if path == '/api/phrase-organize':return self.send(200,phrase_tools.organize(data))
             if path == '/api/phrase-check':return self.send(200,phrase_tools.check_code(data))
@@ -179,6 +181,7 @@ class Handler(BaseHTTPRequestHandler):
             elif path == '/api/upgrade-check':return self.send(200,upgrade_check.retry(workflow.VERSION))
             elif path == '/api/snapshot-create':return self.send(200,local_snapshots.create('手动保存'))
             elif path == '/api/snapshot-restore':return self.send(200,local_snapshots.restore(data['name']))
+            elif path == '/api/complete-before-preview':return self.send(200,complete_backup.preview(complete_backup.value(before=True)))
             elif path == '/api/complete-preview':return self.send(200,complete_backup.preview(data['backup']))
             elif path == '/api/complete-export':return self.send(200,learning.request('complete-export'))
             elif path == '/api/complete-restore':return self.send(200,complete_backup.confirm(data['id']))

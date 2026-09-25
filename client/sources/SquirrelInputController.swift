@@ -171,25 +171,37 @@ final class SquirrelInputController: IMKInputController {
     let english = rimeAPI.get_option(session, "ascii_mode")
     guard NSApp.squirrelAppDelegate.config?.getBool(english ? "kongime/pair_english" : "kongime/pair_chinese") == true,
           client.supportsProperty(TSMDocumentPropertyTag(kTSMDocumentSupportDocumentAccessPropertyTag)) else { return false }
+    if let app = client.bundleIdentifier(),
+       NSApp.squirrelAppDelegate.config?.getBool("kongime/pair_disabled_apps/" + app) == true { return false }
     let selection = client.selectedRange()
-    guard selection.location != NSNotFound, selection.length == 0 else { return false }
+    guard selection.location != NSNotFound, selection.length <= 100_000 else { return false }
     let ascii = english || rimeAPI.get_option(session, "ascii_punct")
     func text(_ range: NSRange) -> String? {
       var actual = NSRange(location: NSNotFound, length: 0)
       let value = client.string(from: range, actualRange: &actual)
       return actual == range ? value : nil
     }
-    if event.keyCode == 51, selection.location > 0,
+    if event.keyCode == 51, selection.length == 0, selection.location > 0,
        let around = text(NSRange(location: selection.location - 1, length: 2)),
        PunctuationPairs.isEmptyPair(around, ascii: ascii) {
       client.insertText("", replacementRange: NSRange(location: selection.location - 1, length: 2))
       return true
     }
+    func locate(_ range: NSRange) {
+      client.setMarkedText("", selectionRange: NSRange(location: 0, length: 0), replacementRange: range)
+    }
+    let key = event.characters ?? ""
+    if selection.length == 0,
+       let closing = PunctuationPairs.closing(for: key, ascii: ascii),
+       text(NSRange(location: selection.location, length: 1)) == closing {
+      PunctuationPairs.move(to: selection.location + 1, replace: { client.insertText($0, replacementRange: $1) }, locate: locate)
+      return true
+    }
     let previous = selection.location > 0 ? text(NSRange(location: selection.location - 1, length: 1)) ?? "" : ""
-    guard let pair = PunctuationPairs.pair(for: event.characters ?? "", ascii: ascii, previous: previous) else { return false }
-    PunctuationPairs.insert(pair, at: selection.location, replace: { client.insertText($0, replacementRange: $1) }, locate: {
-      client.setMarkedText("", selectionRange: NSRange(location: 0, length: 0), replacementRange: $0)
-    })
+    guard let pair = PunctuationPairs.pair(for: key, ascii: ascii, previous: selection.length > 0 ? "" : previous),
+          let selected = selection.length > 0 ? text(selection) : "" else { return false }
+    PunctuationPairs.wrap(pair, text: selected, range: selection,
+      replace: { client.insertText($0, replacementRange: $1) }, locate: locate)
     return true
   }
 

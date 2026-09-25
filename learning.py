@@ -34,7 +34,7 @@ def status():
  try:
   import workflow,plistlib
   app=workflow.client()
-  result['available']=bool(app and plistlib.loads((app/'Contents/Info.plist').read_bytes()).get('KongIMEVersion')in ('0.16.0','0.17.0','0.18.0','0.19.0','0.20.0','0.21.0','0.22.0','0.23.0','0.24.0','0.25.0'))
+  result['available']=bool(app and plistlib.loads((app/'Contents/Info.plist').read_bytes()).get('KongIMEVersion')in ('0.16.0','0.17.0','0.18.0','0.19.0','0.20.0','0.21.0','0.22.0','0.23.0','0.24.0','0.25.0','0.26.0'))
  except (OSError,ValueError):pass
  return result
 
@@ -43,7 +43,7 @@ def request(operation,value=None):
  import complete_backup
  complete=operation in ('complete-export','complete-restore')
  if operation not in ('export','restore','rollback','complete-export','complete-restore'):raise ValueError('学习词频操作无效')
- if complete and not complete_backup.available():raise ValueError('请安装 0.25 并注销重新登录后使用完整迁移')
+ if complete and not complete_backup.available():raise ValueError('请安装 0.25 或更新版本并注销重新登录后使用完整迁移')
  if not status()['available']:raise ValueError('请先安装当前版本并注销重新登录，再使用学习词频迁移')
  if operation=='restore':value={'format':FORMAT,'rows':validate(value)}
  folder=root();folder.mkdir(parents=True,exist_ok=True)

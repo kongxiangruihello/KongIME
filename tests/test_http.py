@@ -32,6 +32,20 @@ class HTTPTests(unittest.TestCase):
         with urllib.request.urlopen(req) as r:
             raw=r.read()
             return raw if r.headers.get_content_type()=='application/zip' else json.loads(raw)
+    def test_v026_compatibility_restore(self):
+      app={'id':'com.example.V026','name':'V026','mode':'default','disable_pairs':True}
+      self.request('app-preference',app)
+      try:
+       self.assertIn(app,self.request('state')['app_preferences'])
+       backup=self.request('profile-backup');preview=self.request('restore-preview',{'source':'file','backup':backup})
+       self.assertTrue(self.request('restore-confirm',{'id':preview['id']})['verified'])
+       self.assertFalse(self.request('restore-report')['report']['changed_since'])
+       self.assertFalse(self.request('status')['deployed'])
+       self.assertIn(app,self.request('state')['app_preferences'])
+       with self.assertRaises(urllib.error.HTTPError) as denied:self.request('check-update',{},token=False)
+       self.assertEqual(denied.exception.code,403)
+      finally:self.request('app-preference',dict(app,delete=True))
+
     def test_v025_block_and_complete_preview(self):
         import hashlib
         original=self.request('quick-backup')

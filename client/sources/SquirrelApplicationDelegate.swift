@@ -18,7 +18,7 @@ final class SquirrelApplicationDelegate: NSObject, NSApplicationDelegate, UNUser
   var panel: SquirrelPanel?
   var enableNotifications = false
   // Compiled into the running executable; never read the replaced bundle on disk.
-  private let runtimeVersion = "0.25.0"
+  private let runtimeVersion = "0.26.0"
   private var runtimeTimer: Timer?
   private var runtimeURL: URL {SquirrelApp.userDir.appendingPathComponent("kongime-runtime-\(ProcessInfo.processInfo.processIdentifier).json")}
   private func publishRuntime() {

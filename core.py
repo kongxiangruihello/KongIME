@@ -410,8 +410,11 @@ def normalize_app_preference(value):
     app_id=str(value.get('id',''))
     if not re.fullmatch('[A-Za-z0-9][A-Za-z0-9.-]{1,199}',app_id):raise ValueError('应用标识无效')
     mode=value.get('mode')
-    if mode not in ('chinese','english','remember'):raise ValueError('应用初始状态无效')
-    return {'id':app_id,'name':str(value.get('name',app_id))[:100],'mode':mode}
+    if mode not in ('default','chinese','english','remember'):raise ValueError('应用初始状态无效')
+    if type(value.get('disable_pairs',False)) is not bool:raise ValueError('应用标点设置无效')
+    result={'id':app_id,'name':str(value.get('name',app_id))[:100],'mode':mode}
+    if value.get('disable_pairs'):result['disable_pairs']=True
+    return result
 
 FUZZY_RULES = {
     'z_zh': ('derive/^zh/z/', 'derive/^z([^h])/zh$1/'),
@@ -617,7 +620,8 @@ recognizer:
     for pref in s.get('app_preferences',[]):
         pref=normalize_app_preference(pref)
         config+='  '+json.dumps('kongime/remember_apps/'+pref['id'])+': '+str(pref['mode']=='remember').lower()+'\n'
-        config+='  '+json.dumps('app_options/'+pref['id']+'/ascii_mode')+': '+str(pref['mode']=='english').lower()+'\n'
+        config+='  '+json.dumps('kongime/pair_disabled_apps/'+pref['id'])+': '+str(pref.get('disable_pairs',False)).lower()+'\n'
+        if pref['mode']!='default':config+='  '+json.dumps('app_options/'+pref['id']+'/ascii_mode')+': '+str(pref['mode']=='english').lower()+'\n'
     (target / 'squirrel.custom.yaml').write_text(config)
     return len(usable)
 

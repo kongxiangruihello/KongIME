@@ -28,7 +28,9 @@ def canonical(value):
  names={'abbreviation':'简拼','page_size':'候选数量','learning':'本地候选词推荐','show_pinyin':'显示拼音','auto_save':'自动保存','ascii_punctuation':'英文标点','direct_english':'大写英文直输','recognize_addresses':'网址邮箱识别','shortcuts':'快捷键','language_hint':'中英文切换提示','pair_chinese':'中文成对标点','pair_english':'英文成对标点'}
  for key,value in s['settings'].items():settings[names.get(key,key)]=value
  settings['候选外观']=s['appearance'];settings['模糊音']=s['fuzzy']
- for x in s['app_preferences']:settings['应用初始语言 · '+x['id']]=x['mode']
+ for x in s['app_preferences']:
+  settings['应用初始语言 · '+x['id']]=x['mode']
+  if x.get('disable_pairs'):settings['应用停用成对标点 · '+x['id']]=True
  return {'词库':libraries,'已启用词条与个人词语':words,'短语':phrases,'置顶':pins,'个性化设置':settings,
          '快捷排序':{x['code']+' · '+x['word']:x['mode'] for x in prefs},
          '场景':{x['name']:x['libraries'] for x in s['scenes']},
