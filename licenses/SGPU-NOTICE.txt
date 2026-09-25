@@ -1,0 +1,4 @@
+SGPU format and pinyin index reference: https://github.com/nopdan/rose/tree/main/format/sogou_bak
+Pinyin index table derived from pinyin_list.go (GPL-3.0).
+This release includes the corresponding manager and launcher source.
+SGPU parser is implemented with strict bounds checks, preserving the stored unsigned frequency field.

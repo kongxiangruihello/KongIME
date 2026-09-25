@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<installer-gui-script minSpecVersion="2">
+  <title>KongIME 0.25.0</title>
+  <options customize="never" require-scripts="false" hostArchitectures="arm64" />
+  <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true" />
+  <welcome file="welcome.html" mime-type="text/html" />
+  <readme file="readme.html" mime-type="text/html" />
+  <conclusion file="conclusion.html" mime-type="text/html" />
+  <volume-check>
+    <allowed-os-versions>
+      <os-version min="13.0" />
+    </allowed-os-versions>
+  </volume-check>
+  <choices-outline>
+    <line choice="kongime" />
+  </choices-outline>
+  <choice id="kongime" title="KongIME 全拼输入法" description="系统输入法与内置设置；个人词库和配置保留。" visible="false" selected="true">
+    <pkg-ref id="local.kongime.inputmethod" />
+  </choice>
+  <pkg-ref id="local.kongime.inputmethod" version="0.25.0" onConclusion="None">KongIME-component.pkg</pkg-ref>
+</installer-gui-script>

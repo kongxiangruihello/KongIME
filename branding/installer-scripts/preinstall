@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+target_volume="${3:-/}"
+previous="$target_volume/Library/Input Methods/Squirrel.app"
+if [ -d "$previous" ]; then
+  backup="$target_volume/Library/Application Support/KongIME/backups/$(date +%Y%m%d-%H%M%S)-$$"
+  /bin/mkdir -p "$backup"
+  /usr/bin/ditto "$previous" "$backup/Squirrel.app"
+fi
